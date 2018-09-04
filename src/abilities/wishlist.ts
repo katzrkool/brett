@@ -105,6 +105,9 @@ class Wishlist {
         }
     }
     filter(sales: Game[][]) {
+        if (!fs.existsSync(this.config['cache'])) {
+            fs.writeFileSync(this.config['cache'], '[]', {encoding: 'utf-8'});
+        }
         const cache = JSON.parse(fs.readFileSync(this.config['cache'], {encoding: 'utf-8'}));
         const newCache: Game[] = [];
         const filteredSales: Game[] = [];

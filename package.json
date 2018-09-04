@@ -1,7 +1,7 @@
 {
   "name": "brett",
   "version": "1.0.0",
-  "description": "Discord bot with various functions like wishlist scraping",
+  "description": "A nifty Discord bot",
   "main": "bin/main.js",
   "scripts": {
     "start": "node bin/main.js",
