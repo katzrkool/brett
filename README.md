@@ -42,7 +42,7 @@ Brett will then post in the specified channel about any sales for any games on a
 The bot will not post about a game until the next time it goes on sale. (So the game must go off sale, then back on sale)
 
 ## Installation
-`npm install`
+`npm install && tsc`
 
 ## Contributing
 Feel free to submit a PR or make suggestions! I'd appreciate it!
