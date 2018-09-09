@@ -2,7 +2,7 @@
 A nifty Discord bot
 
 ## Features
-* Scrapes users' wishlists for deals.
+* Scrapes users' steam wishlists for deals.
 ![Brett announcing game deal](screenshots/wishlist.png)
 
 ## Usage
@@ -38,13 +38,13 @@ For the wishlist functionality, you'll need to add to your config. You need a ca
 
 To activate the wishlist functionality, use the `-w` flag.
 
-Brett will then post in the specified channel about any sales for any games on a user's wishlist and mention them.
+Brett will then post in the specified channel about any sales for any games on a user's steam wishlist and mention them.
 (It will mention multiple users that have the same game, not make an individual post.)
 
 The bot will not post about a game until the next time it goes on sale. (So the game must go off sale, then back on sale)
 
 ## Installation
-`npm install`
+`npm install && tsc`
 
 ## Contributing
 Feel free to submit a PR or make suggestions! I'd appreciate it!
