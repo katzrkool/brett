@@ -18,6 +18,8 @@ A config file is made up of a token, and sub objects for modules. See example be
 Then, run `node bin/main.js`
 
 ### Wishlist
+Brett can check users' wishlists for sales on both Steam and Humble Bundle
+
 For the wishlist functionality, you'll need to add to your config. You need a cache (a file to store sales data), a channel ID to post in, and a dictionary of discord users to steam ids. See example below
 ```json
 {
@@ -28,7 +30,7 @@ For the wishlist functionality, you'll need to add to your config. You need a ca
      "users": {
        "DISCORD USER ID 1": "STEAM USER ID 1",
        "DISCORD USER ID 2": "STEAM USER ID 2",
-       "STEAM USER ID 3": "STEAM USER ID 3"
+       "DISCORD USER ID 3": "STEAM USER ID 3"
      }
  }
 }

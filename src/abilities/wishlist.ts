@@ -1,17 +1,9 @@
 import axios from 'axios';
 import {Client} from 'discord.js';
 import * as fs from 'fs';
+import Game from '../interfaces/game';
 import {Parser} from 'htmlparser2';
-
-interface Game {
-    name: string;
-    percent: number;
-    init: number;
-    final: number;
-    user: string;
-    url: string;
-    id: string;
-}
+import Stores from './stores';
 
 class Wishlist {
     client: Client;
@@ -27,6 +19,7 @@ class Wishlist {
             promises.push(this.fetchWishlist(user, this.config['users'][user]));
         }
         let sales = (await Promise.all(promises)).filter((i) => i.length > 0);
+        sales = [].concat(...sales);
         sales = this.combine(sales);
         sales = this.filter(sales);
         await this.send(sales);
@@ -49,16 +42,19 @@ class Wishlist {
         return (await Promise.all(promises)).filter((i) => i !== null);
     }
 
-    async getItemData(appid, user): Promise<Game | null> {
-        const details = (
-            await axios.get(`https://store.steampowered.com/api/appdetails?appids=${appid}`)).data[appid].data;
+    async getItemData(appid: string, user: string): Promise<Game | null> {
+        let game: any = await Stores.steam(appid, user);
 
-        const pricing = details['price_overview'];
-        const url = `https://store.steampowered.com/app/${appid}`;
+        if (!game['percent']) {
+            game = await Stores.humble(game['name'], appid, user);
+        }
 
-        if (pricing && pricing['discount_percent'] !== 0) {
-            return {init: Number(pricing.initial) / 100, final: Number(pricing.final) / 100,
-                name: details.name, percent: pricing['discount_percent'], user, url, id: appid};
+        if (!game || !game['percent']) {
+            return null;
+        }
+
+        if (game.percent !== 0) {
+            return game;
         } else {
             return null;
         }
@@ -104,28 +100,26 @@ class Wishlist {
             return `<@${users[0]}>`;
         }
     }
-    filter(sales: Game[][]) {
+    filter(sales: Game[]) {
         if (!fs.existsSync(this.config['cache'])) {
             fs.writeFileSync(this.config['cache'], '[]', {encoding: 'utf-8'});
         }
         const cache = JSON.parse(fs.readFileSync(this.config['cache'], {encoding: 'utf-8'}));
         const newCache: Game[] = [];
         const filteredSales: Game[] = [];
-        for (const m of sales) {
-            for (const i of m) {
-                let found = false;
-                for (const x of Object.keys(cache)) {
-                    if (i.name === cache[x].name) {
-                        if (this.getItemData(i.id, i.user)) {
-                            newCache.push(i);
-                        }
-                        found = true;
-                        break;
+        for (const i of sales) {
+            let found = false;
+            for (const x of Object.keys(cache)) {
+                if (i.name === cache[x].name) {
+                    if (this.getItemData(i.id, i.user)) {
+                        newCache.push(i);
                     }
+                    found = true;
+                    break;
                 }
-                if (!found) {
-                    filteredSales.push(i);
-                }
+            }
+            if (!found) {
+                filteredSales.push(i);
             }
         }
         fs.writeFileSync(this.config['cache'], JSON.stringify(filteredSales.concat(newCache)), {encoding: 'utf-8'});
