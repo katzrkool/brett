@@ -1,7 +1,7 @@
 import Brett from './Brett';
 
 async function main(args: string[]) {
-    let config = 'brett-config.json';
+    let config = `${ __dirname}/../brett-config.json`;
     const brettArgs: string[] = [];
     for (const i of args) {
         if (Brett.validParams.indexOf(i) > -1) {

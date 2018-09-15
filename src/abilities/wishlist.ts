@@ -1,8 +1,8 @@
 import axios from 'axios';
 import {Client} from 'discord.js';
 import * as fs from 'fs';
-import Game from '../interfaces/game';
 import {Parser} from 'htmlparser2';
+import Game from '../interfaces/game';
 import Stores from './stores';
 
 class Wishlist {

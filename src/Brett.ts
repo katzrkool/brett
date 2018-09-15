@@ -29,7 +29,12 @@ class Brett {
         await this.client.login(this.token);
     }
     async wishlist() {
-        await new Wishlist(this.client, this.config['wishlist']).go();
+        const wishConfig = this.config['wishlist'];
+        const pathList = this.configPath.split('/');
+        pathList.pop();
+        const path = `${pathList.join('/')}`;
+        wishConfig.cache = wishConfig.cache.replace('$HERE', path);
+        await new Wishlist(this.client, wishConfig).go();
     }
 }
 

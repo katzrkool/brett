@@ -25,7 +25,7 @@ For the wishlist functionality, you'll need to add to your config. You need a ca
 {
   "token": "DISCORD BOT TOKEN",
   "wishlist": {
-    "cache": "brett-wishlist.json",
+    "cache": "$HERE/brett-wishlist.json",
     "channel": "CHANNEL NUMBER",
      "users": {
        "DISCORD USER ID 1": "STEAM USER ID 1",
@@ -35,6 +35,8 @@ For the wishlist functionality, you'll need to add to your config. You need a ca
  }
 }
 ```
+
+In the cache file path, $HERE will be replaced with the directory of `brett-config.json`
 
 To activate the wishlist functionality, use the `-w` flag.
 
