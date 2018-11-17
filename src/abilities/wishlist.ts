@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import {Parser} from 'htmlparser2';
 import Game from '../interfaces/game';
 import Stores from './stores';
+import WishlistItem from '../interfaces/wishlistItem';
 
 class Wishlist {
     client: Client;
@@ -14,32 +15,40 @@ class Wishlist {
     }
 
     async go() {
-        const promises: Array<Promise<any>> = [];
+        let items: WishlistItem[][] = [];
         for (const user of Object.keys(this.config['users'])) {
-            promises.push(this.fetchWishlist(user, this.config['users'][user]));
+            items.push(await this.fetchWishlist(user, this.config['users'][user]));
         }
-        let sales = (await Promise.all(promises)).filter((i) => i.length > 0);
-        sales = [].concat(...sales);
-        sales = this.combine(sales);
+        items = (items).filter((i) => i.length > 0);
+        let flattenedItems = [].concat.apply([], items);
+        flattenedItems = this.combine(flattenedItems);
+
+        let promises: Array<Promise<Game | null>> = [];
+        for (const i of flattenedItems) {
+            promises.push(this.getItemData(i.id, i.user))
+        }
+
+        let sales = <Game[]>(await Promise.all(promises)).filter((i) => i !== null);
+
         sales = this.filter(sales);
         await this.send(sales);
     }
 
-    async fetchWishlist(user: string, steamID: string) {
+    async fetchWishlist(user: string, steamID: string): Promise<WishlistItem[]> {
         const html = (await axios.get(`https://store.steampowered.com/wishlist/profiles/${steamID}`)).data;
-        const promises: Array<Promise<any>> = [];
+        const items: WishlistItem[] = [];
         const parser = new Parser({
             ontext: (text) => {
                 if (text.indexOf('var g_rgWishlistData') > -1) {
                     const wishlistData = JSON.parse(text.split('= ')[1].split(';')[0]);
                     for (const i of wishlistData) {
-                        promises.push(this.getItemData(i.appid, user));
+                        items.push({id: i.appid, user});
                     }
                 }
             },
         });
         parser.parseComplete(html);
-        return (await Promise.all(promises)).filter((i) => i !== null);
+        return items;
     }
 
     async getItemData(appid: string, user: string): Promise<Game | null> {
@@ -60,12 +69,12 @@ class Wishlist {
         }
 
     }
-    combine(sales: Game[]) {
+    combine(sales: WishlistItem[]): WishlistItem[] {
         const checked: any = [];
         for (const i of sales) {
             let found = false;
             for (const x of Object.keys(checked)) {
-                if (i.name === checked[x].name) {
+                if (i.id === checked[x].id) {
                     checked[x].user += `, ${i.user}`;
                     found = true;
                     break;
