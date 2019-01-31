@@ -17,22 +17,43 @@ A config file is made up of a token, and sub objects for modules. See example be
 
 Then, run `node bin/main.js`
 
+### Chat
+
+Brett now supports chat and reads commands in a specified channel. The following is the current help text.
+
+Hi! The following commands are supported! Use these at the beginning of your message
+
+* !add: Signs you up for wishlist service. Brett will alert you when your steam wishlist games go on sale. Your steam profile MUST be public! Pass your Steam Community ID as an argument. If you don't know what your Steam Community ID is, it's the number that comes after `http://steamcommunity.com/profiles/`.
+
+Example: `!add STEAMCOMMUNITYID`
+
+* !remove: Removes you from the wishlist service. Not much more to add here
+
+Example: `!remove`
+
+* !mysteamid: DMs you your Steam Community ID if you are signed up.
+
+Example: `!steamid`
+
+* !help: Brings up this menu
+
+Example: `!help`
+
 ### Wishlist
 Brett can check users' wishlists for sales on both Steam and Humble Bundle
 
-For the wishlist functionality, you'll need to add to your config. You need a cache (a file to store sales data), a channel ID to post in, and a dictionary of discord users to steam ids. See example below
+For the wishlist functionality, you'll need to add to your config. You need a cache (a sqlite3 database to store sales and user data), a channel ID to post in, a channel ID to recieve commands in (can be the same channel), and how far back to scan for messages. See example below
 ```json
 {
+  "cache": "$HERE/brett-data.db",
   "token": "DISCORD BOT TOKEN",
+  "messages": {
+      "channel": "MESSAGE CHANNEL NUMBER",
+      "hours": 2
+    },
   "wishlist": {
-    "cache": "$HERE/brett-wishlist.json",
-    "channel": "CHANNEL NUMBER",
-     "users": {
-       "DISCORD USER ID 1": "STEAM USER ID 1",
-       "DISCORD USER ID 2": "STEAM USER ID 2",
-       "DISCORD USER ID 3": "STEAM USER ID 3"
-     }
- }
+    "channel": "ALERTS CHANNEL NUMBER"
+    }
 }
 ```
 
