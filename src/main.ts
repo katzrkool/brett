@@ -1,20 +1,16 @@
-import Brett from './Brett';
+import Brett from './brett';
 
 async function main(args: string[]) {
     let config = `${ __dirname}/../brett-config.json`;
-    const brettArgs: string[] = [];
+    let wishlist = false;
     for (const i of args) {
-        if (Brett.validParams.indexOf(i) > -1) {
-            if (i === '--c') {
-                config = args[args.indexOf(i) + 1];
-            } else if (i.startsWith('--')) {
-                brettArgs.push(args[args.indexOf(i) + 1]);
-            } else if (i.startsWith('-')) {
-                brettArgs.push(i);
-            }
+        if (i === '--c') {
+            config = args[args.indexOf(i) + 1];
+        } else if (i === '-w') {
+            wishlist = true;
         }
     }
-    const bot = new Brett(config, brettArgs);
+    const bot = new Brett(config, wishlist);
     await bot.go();
 }
 

@@ -1,64 +1,87 @@
 import axios from 'axios';
 import {Client} from 'discord.js';
-import * as fs from 'fs';
-import {Parser} from 'htmlparser2';
+import {Database} from 'sqlite3';
 import Game from '../interfaces/game';
-import Stores from './stores';
-import WishlistItem from '../interfaces/wishlistItem';
+import Humble from './humble';
 
 class Wishlist {
     client: Client;
     config: object;
-    constructor(client: Client, config: object) {
+    db: Database;
+    constructor(client: Client, config: object, db: Database) {
         this.client = client;
         this.config = config;
+        this.db = db;
     }
 
     async go() {
-        let items: WishlistItem[][] = [];
-        for (const user of Object.keys(this.config['users'])) {
-            items.push(await this.fetchWishlist(user, this.config['users'][user]));
-        }
-        items = (items).filter((i) => i.length > 0);
-        let flattenedItems = [].concat.apply([], items);
-        flattenedItems = this.combine(flattenedItems);
-
-        let promises: Array<Promise<Game | null>> = [];
-        for (const i of flattenedItems) {
-            promises.push(this.getItemData(i.id, i.user))
+        const lists: Array<Promise<Game[]>> = [];
+        const users = await this.getAll('SELECT * FROM users');
+        for (const user of users) {
+            lists.push(this.fetchWishlist(user.user, user.id));
         }
 
-        let sales = <Game[]>(await Promise.all(promises)).filter((i) => i !== null);
+        let items: any = (await Promise.all(lists)).filter((i) => i.length > 0);
 
-        sales = this.filter(sales);
+        items = [].concat(...items);
+        items = this.combine(items);
+
+        const promises: Array<Promise<Game | null>> = [];
+        for (const i of items) {
+            if (i.percent === 0) {
+                promises.push(this.getItemData(i.name, i.id, i.user));
+            } else {
+                promises.push(i);
+            }
+        }
+        let sales = (await Promise.all(promises)).filter((i) => i !== null) as Game[];
+
+        sales = await this.filter(sales);
+
         await this.send(sales);
+
     }
 
-    async fetchWishlist(user: string, steamID: string): Promise<WishlistItem[]> {
-        const html = (await axios.get(`https://store.steampowered.com/wishlist/profiles/${steamID}`)).data;
-        const items: WishlistItem[] = [];
-        const parser = new Parser({
-            ontext: (text) => {
-                if (text.indexOf('var g_rgWishlistData') > -1) {
-                    const wishlistData = JSON.parse(text.split('= ')[1].split(';')[0]);
-                    for (const i of wishlistData) {
-                        items.push({id: i.appid, user});
-                    }
+    async fetchWishlist(user: string, steamID: string): Promise<Game[]> {
+        const json = (await axios.get(`https://store.steampowered.com/wishlist/profiles/${steamID}/wishlistdata/?p=0` )).data;
+        return Object.keys(json).map((x) => this.parseSteamJSON(x, user, json[x]));
+    }
+
+    parseSteamJSON(key: string, user: string, data): Game {
+        return {name: data.name, url: `https://store.steampowered.com/app/${key}`, id: key, user, final: data.subs[0].price / 100,
+            percent: data.subs[0].discount_pct,
+            init: Number(((data.subs[0].price / 100) / (1 - (data.subs[0].discount_pct / 100))).toFixed(2))};
+    }
+
+    async getAll(query: string, params?): Promise<any> {
+        return new Promise(((resolve, reject) => {
+            this.db.all(query, params, (err, rows) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(rows);
                 }
-            },
-        });
-        parser.parseComplete(html);
-        return items;
+            });
+        }));
     }
 
-    async getItemData(appid: string, user: string): Promise<Game | null> {
-        let game: any = await Stores.steam(appid, user);
+    async get(query: string, params?) {
+        return new Promise(((resolve, reject) => {
+            this.db.get(query, params, (err, row) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(row);
+                }
+            });
+        }));
+    }
 
-        if (!game['percent']) {
-            game = await Stores.humble(game['name'], appid, user);
-        }
+    async getItemData(name: string, appid: string, user: string): Promise<Game | null> {
 
-        if (!game || !game['percent']) {
+        const game = await Humble.go(name, appid, user);
+
+        if (!game) {
             return null;
         }
 
@@ -69,7 +92,7 @@ class Wishlist {
         }
 
     }
-    combine(sales: WishlistItem[]): WishlistItem[] {
+    combine(sales: Game[]): Game[] {
         const checked: any = [];
         for (const i of sales) {
             let found = false;
@@ -109,29 +132,21 @@ class Wishlist {
             return `<@${users[0]}>`;
         }
     }
-    filter(sales: Game[]) {
-        if (!fs.existsSync(this.config['cache'])) {
-            fs.writeFileSync(this.config['cache'], '[]', {encoding: 'utf-8'});
-        }
-        const cache = JSON.parse(fs.readFileSync(this.config['cache'], {encoding: 'utf-8'}));
-        const newCache: Game[] = [];
+    async filter(sales: Game[]) {
+        const timestamp =  new Date().toISOString();
         const filteredSales: Game[] = [];
+
         for (const i of sales) {
-            let found = false;
-            for (const x of Object.keys(cache)) {
-                if (i.name === cache[x].name) {
-                    if (this.getItemData(i.id, i.user)) {
-                        newCache.push(i);
-                    }
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
+            const game = await this.get('SELECT * FROM cache WHERE name = ?', [i.name]);
+            if (game) {
+                // if it's not in the database, let's alert the user
+                this.db.run('UPDATE cache SET timestamp = ? WHERE name = ?', [timestamp, i.name]);
+            } else {
                 filteredSales.push(i);
+                this.db.run('INSERT INTO cache (name, percent, init, final, url, timestamp) VALUES (?, ?, ?, ?, ?, ?)', [i.name, i.percent, i.init, i.final, i.url, timestamp]);
             }
         }
-        fs.writeFileSync(this.config['cache'], JSON.stringify(filteredSales.concat(newCache)), {encoding: 'utf-8'});
+        this.db.run('DELETE FROM cache WHERE timestamp != ?', timestamp);
         return filteredSales;
     }
 }
