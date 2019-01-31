@@ -1,11 +1,11 @@
-import WishlistItem from './wishlistItem';
-
-interface Game extends WishlistItem{
+interface Game {
     percent: number;
     init: number;
     final: number;
     name: string;
     url: string;
+    user: string;
+    id: string;
 }
 
 export default Game;
