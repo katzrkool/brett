@@ -48,6 +48,8 @@ The bot will not post about a game until the next time it goes on sale. (So the 
 
 Brett now supports chat and reads commands in a specified channel. The following is the current help text.
 
+He will react with the checkmark emoji when a message has been dealt with.
+
 Hi! The following commands are supported! Use these at the beginning of your message
 
 * !add: Signs you up for wishlist service. Brett will alert you when your steam wishlist games go on sale. Your steam profile MUST be public! Pass your Steam Community ID as an argument. If you don't know what your Steam Community ID is, it's the number that comes after `http://steamcommunity.com/profiles/`.
