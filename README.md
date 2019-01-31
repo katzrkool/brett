@@ -17,28 +17,6 @@ A config file is made up of a token, and sub objects for modules. See example be
 
 Then, run `node bin/main.js`
 
-### Chat
-
-Brett now supports chat and reads commands in a specified channel. The following is the current help text.
-
-Hi! The following commands are supported! Use these at the beginning of your message
-
-* !add: Signs you up for wishlist service. Brett will alert you when your steam wishlist games go on sale. Your steam profile MUST be public! Pass your Steam Community ID as an argument. If you don't know what your Steam Community ID is, it's the number that comes after `http://steamcommunity.com/profiles/`.
-
-Example: `!add STEAMCOMMUNITYID`
-
-* !remove: Removes you from the wishlist service. Not much more to add here
-
-Example: `!remove`
-
-* !mysteamid: DMs you your Steam Community ID if you are signed up.
-
-Example: `!steamid`
-
-* !help: Brings up this menu
-
-Example: `!help`
-
 ### Wishlist
 Brett can check users' wishlists for sales on both Steam and Humble Bundle
 
@@ -65,6 +43,29 @@ Brett will then post in the specified channel about any sales for any games on a
 (It will mention multiple users that have the same game, not make an individual post.)
 
 The bot will not post about a game until the next time it goes on sale. (So the game must go off sale, then back on sale)
+
+### Chat
+
+Brett now supports chat and reads commands in a specified channel. The following is the current help text.
+
+Hi! The following commands are supported! Use these at the beginning of your message
+
+* !add: Signs you up for wishlist service. Brett will alert you when your steam wishlist games go on sale. Your steam profile MUST be public! Pass your Steam Community ID as an argument. If you don't know what your Steam Community ID is, it's the number that comes after `http://steamcommunity.com/profiles/`.
+
+Example: `!add STEAMCOMMUNITYID`
+
+* !remove: Removes you from the wishlist service. Not much more to add here
+
+Example: `!remove`
+
+* !mysteamid: DMs you your Steam Community ID if you are signed up.
+
+Example: `!steamid`
+
+* !help: Brings up this menu
+
+Example: `!help`
+
 
 ## Installation
 `npm install && tsc`
