@@ -18,12 +18,12 @@
   },
   "homepage": "https://github.com/katzrkool/wishlist#readme",
   "dependencies": {
-    "axios": "^0.18.0",
-    "discord.js": "^11.4.2",
-    "sqlite3": "^4.0.6"
+    "axios": "^0.19.0",
+    "discord.js": "^11.5.1",
+    "sqlite3": "^4.0.4"
   },
   "devDependencies": {
-    "@types/node": "^10.9.4",
-    "@types/sqlite3": "^3.1.3"
+    "@types/node": "^10.14.7",
+    "@types/sqlite3": "^3.1.5"
   }
 }
