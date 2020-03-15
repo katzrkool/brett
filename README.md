@@ -1,6 +1,9 @@
 # Brett
 A nifty Discord bot
 
+## This project is no longer maintained
+It may/possibly break when run.
+
 ## Features
 * Scrapes users' steam wishlists for deals.
 ![Brett announcing game deal](screenshots/wishlist.png)
@@ -71,6 +74,3 @@ Example: `!help`
 
 ## Installation
 `npm install && tsc`
-
-## Contributing
-Feel free to submit a PR or make suggestions! I'd appreciate it!
